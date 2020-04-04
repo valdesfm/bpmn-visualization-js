@@ -17,6 +17,7 @@ import { mxgraph } from 'ts-mxgraph';
 import { MxGraphFactoryService } from '../../service/MxGraphFactoryService';
 import StyleConfigurator from './StyleConfigurator';
 import ShapeConfigurator from './ShapeConfigurator';
+import BpmnVisuOptions from '../BpmnVisuOptions';
 
 /**
  * Configure mxgraph
@@ -30,9 +31,16 @@ export default class MxGraphConfigurator {
 
   private readonly graph: mxgraph.mxGraph;
 
-  constructor(container: Element) {
+  constructor(container: Element, options?: BpmnVisuOptions) {
     this.initMxGraphPrototype();
     this.graph = new this.mxGraph(container, new this.mxGraphModel());
+    if (options) {
+      if (options.activatePanning) {
+        this.graph.setPanning(true);
+        this.graph.useScrollbarsForPanning = false;
+      }
+    }
+
     new StyleConfigurator(this.graph).configureStyles();
     new ShapeConfigurator().configureShapes();
   }

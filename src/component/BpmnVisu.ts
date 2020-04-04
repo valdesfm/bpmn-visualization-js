@@ -18,6 +18,7 @@ import { mxgraph } from 'ts-mxgraph';
 import MxGraphRenderer from './mxgraph/MxGraphRenderer';
 import { defaultBpmnParser } from './parser/BpmnParser';
 import { MxGraphFactoryService } from '../service/MxGraphFactoryService';
+import BpmnVisuOptions from './BpmnVisuOptions';
 
 export default class BpmnVisu {
   private mxClient: typeof mxgraph.mxClient = MxGraphFactoryService.getMxGraphProperty('mxClient');
@@ -25,13 +26,13 @@ export default class BpmnVisu {
 
   public readonly graph: mxgraph.mxGraph;
 
-  constructor(protected container: Element) {
+  constructor(protected container: Element, options?: BpmnVisuOptions) {
     try {
       if (!this.mxClient.isBrowserSupported()) {
         this.mxUtils.error('Browser is not supported!', 200, false);
       }
       // Instantiate and configure Graph
-      const configurator = new MxGraphConfigurator(this.container);
+      const configurator = new MxGraphConfigurator(this.container, options);
       this.graph = configurator.getGraph();
     } catch (e) {
       // TODO error handling
