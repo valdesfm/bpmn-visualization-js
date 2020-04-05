@@ -22,7 +22,10 @@ import BpmnVisuOptions, { ZoomOptions } from './BpmnVisuOptions';
 
 export default class BpmnVisu {
   private mxClient: typeof mxgraph.mxClient = MxGraphFactoryService.getMxGraphProperty('mxClient');
+  private mxEvent: typeof mxgraph.mxEvent = MxGraphFactoryService.getMxGraphProperty('mxEvent');
+  private mxOutline: typeof mxgraph.mxOutline = MxGraphFactoryService.getMxGraphProperty('mxOutline');
   private mxUtils: typeof mxgraph.mxUtils = MxGraphFactoryService.getMxGraphProperty('mxUtils');
+  private mxWindow: typeof mxgraph.mxWindow = MxGraphFactoryService.getMxGraphProperty('mxWindow');
 
   public readonly graph: mxgraph.mxGraph;
 
@@ -71,5 +74,65 @@ export default class BpmnVisu {
       default:
         throw new Error('Unsupported zoom option');
     }
+  }
+
+  public toggleOutline(): void {
+    console.info('Graph toggle outline');
+    if (this.outlineWindow == null) {
+      this.showOutline();
+    } else {
+      this.outlineWindow.setVisible(!this.outlineWindow.isVisible());
+    }
+  }
+
+  // adapted from https://github.com/jgraph/mxgraph2/blob/a15684d7c8b71074e4c73d89c9192459288e0bf4/javascript/src/js/editor/mxEditor.js#L2779-L2823
+
+  private outlineWindow: mxgraph.mxWindow;
+  private outline: mxgraph.mxOutline;
+  private showOutline(): void {
+    const create = this.outlineWindow == null;
+
+    if (create) {
+      const div = document.createElement('div');
+
+      div.style.overflow = 'hidden';
+      div.style.position = 'relative';
+      div.style.width = '100%';
+      div.style.height = '100%';
+      div.style.background = 'white';
+      div.style.cursor = 'move';
+
+      // title: any,
+      //     content: any,
+      //     x: any,
+      //     y: any,
+      //     width: any,
+      //     height?: any,
+      //     minimizable?: any,
+      //     movable?: any,
+      //     replaceNode?: any,
+      //     style?: any,
+      const wnd = new this.mxWindow('Outline', div, 600, 480, 200, 200, false);
+
+      // Creates the outline in the specified div
+      // and links it to the existing graph
+      const outline = new this.mxOutline(this.graph, div);
+      wnd.setClosable(false);
+      wnd.setResizable(false);
+      // TODO missing in types declaration
+      //wnd.destroyOnClose = false;
+
+      // TODO check if we need this
+      wnd.addListener(this.mxEvent.RESIZE_END, function() {
+        outline.update(false);
+      });
+
+      this.outlineWindow = wnd;
+      this.outline = outline;
+    }
+
+    // Finally shows the outline
+    this.outlineWindow.setVisible(true);
+    this.outline.update(true);
   }
 }
