@@ -28,6 +28,8 @@ export default class BpmnVisu {
   private mxWindow: typeof mxgraph.mxWindow = MxGraphFactoryService.getMxGraphProperty('mxWindow');
 
   public readonly graph: mxgraph.mxGraph;
+  // TODO make this an option (set with BpmnVisuOptions and updatable at runtime)
+  private fitOnLoad = true;
 
   constructor(protected container: Element, options?: BpmnVisuOptions) {
     try {
@@ -44,11 +46,19 @@ export default class BpmnVisu {
     }
   }
 
-  public load(xml: string): void {
+  /* eslint-disable no-console */ public load(xml: string): void {
+    console.info('Start loading BPMN');
     try {
       // TODO the BpmnParser should be a field and injected (see #110)
       const bpmnModel = defaultBpmnParser().parse(xml);
+      console.info('Parsing done');
       new MxGraphRenderer(this.graph).render(bpmnModel);
+      console.info('Rendering done');
+      if (this.fitOnLoad) {
+        this.graph.fit();
+        console.info('Fit on load rendering done');
+      }
+      console.info('BPMN loaded');
     } catch (e) {
       // TODO error handling
       this.mxUtils.alert('Cannot load bpmn diagram: ' + e.message);
